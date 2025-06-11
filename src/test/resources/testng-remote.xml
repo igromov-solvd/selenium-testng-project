@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="LocalSeleniumTestSuite" verbose="1">
+<suite name="RemoteSeleniumTestSuite" verbose="1">
 
-    <!-- Parameters for local execution -->
+    <!-- Default parameters -->
     <parameter name="browser" value="chrome" />
-    <parameter name="remote" value="false" />
+    <parameter name="remote" value="true" />
 
-    <test name="LocalProductSearchTests">
+    <test name="RemoteProductSearchTests">
         <classes>
             <class name="com.solvd.selenium.tests.ProductSearchTest" />
         </classes>
     </test>
+
 </suite>

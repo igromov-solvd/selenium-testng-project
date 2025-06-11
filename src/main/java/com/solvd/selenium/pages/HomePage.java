@@ -11,14 +11,13 @@ public class HomePage extends BasePage {
 
     private WebDriverWait wait;
 
-    // Page Factory elements using CSS selectors
-    @FindBy(css = "input[data-testid='header-search-input']")
+    @FindBy(css = "input#header-big-screen-search-box")
     private WebElement searchInput;
 
-    @FindBy(css = "button[data-testid='header-search-submit']")
+    @FindBy(css = "button[data-testid='header-search-bar-button']")
     private WebElement searchButton;
 
-    @FindBy(css = "button[data-testid='accept-all-cookies']")
+    @FindBy(css = "button#onetrust-accept-btn-handler")
     private WebElement acceptCookiesButton;
 
     public HomePage(WebDriver driver) {

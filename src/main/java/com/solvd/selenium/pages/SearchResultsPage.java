@@ -13,34 +13,15 @@ public class SearchResultsPage extends BasePage {
 
     private WebDriverWait wait;
 
-    // Page Factory elements using CSS selectors
-    @FindBy(css = "article[data-testid='plp-product-item']")
-    private List<WebElement> productItems;
-
-    @FindBy(css = "article[data-testid='plp-product-item'] h3")
+    @FindBy(css = "p[data-testid='product_summary_title']")
     private List<WebElement> productTitles;
 
-    @FindBy(css = "[data-testid='plp-no-products-message']")
-    private WebElement noProductsMessage;
-
-    @FindBy(css = "h1[data-testid='plp-page-title']")
+    @FindBy(css = "h1[data-testid='plp-results-title']")
     private WebElement pageTitle;
 
     public SearchResultsPage(WebDriver driver) {
         super(driver);
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(15));
-    }
-
-    public boolean areProductsDisplayed() {
-        try {
-            wait.until(ExpectedConditions.visibilityOfAllElements(productItems));
-            boolean hasProducts = !productItems.isEmpty();
-            logger.info("Products displayed: {}, Count: {}", hasProducts, productItems.size());
-            return hasProducts;
-        } catch (Exception e) {
-            logger.error("No products found or page not loaded properly", e);
-            return false;
-        }
     }
 
     public List<String> getProductTitles() {
@@ -67,7 +48,7 @@ public class SearchResultsPage extends BasePage {
     }
 
     public int getProductCount() {
-        return productItems.size();
+        return getProductTitles().size();
     }
 
     public String getPageTitleText() {
