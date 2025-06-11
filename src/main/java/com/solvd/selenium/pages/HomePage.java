@@ -3,13 +3,9 @@ package com.solvd.selenium.pages;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import java.time.Duration;
 
 public class HomePage extends BasePage {
-
-    private WebDriverWait wait;
 
     @FindBy(css = "input#header-big-screen-search-box")
     private WebElement searchInput;
@@ -22,7 +18,6 @@ public class HomePage extends BasePage {
 
     public HomePage(WebDriver driver) {
         super(driver);
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
     public void acceptCookiesIfPresent() {

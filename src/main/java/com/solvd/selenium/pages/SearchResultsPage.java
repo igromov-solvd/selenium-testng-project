@@ -3,15 +3,11 @@ package com.solvd.selenium.pages;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class SearchResultsPage extends BasePage {
-
-    private WebDriverWait wait;
 
     @FindBy(css = "p[data-testid='product_summary_title']")
     private List<WebElement> productTitles;
@@ -21,7 +17,6 @@ public class SearchResultsPage extends BasePage {
 
     public SearchResultsPage(WebDriver driver) {
         super(driver);
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(15));
     }
 
     public List<String> getProductTitles() {
@@ -37,14 +32,14 @@ public class SearchResultsPage extends BasePage {
 
     public void printAllProductTitles() {
         List<String> titles = getProductTitles();
-        System.out.println("\n=== PRODUCT SEARCH RESULTS ===");
-        System.out.println("Total products found: " + titles.size());
-        System.out.println("Product titles:");
+        logger.info("=== PRODUCT SEARCH RESULTS ===");
+        logger.info("Total products found: {}", titles.size());
+        logger.info("Product titles:");
 
         for (int i = 0; i < titles.size(); i++) {
-            System.out.println((i + 1) + ". " + titles.get(i));
+            logger.info("{}. {}", (i + 1), titles.get(i));
         }
-        System.out.println("=================================\n");
+        logger.info("==============================");
     }
 
     public int getProductCount() {

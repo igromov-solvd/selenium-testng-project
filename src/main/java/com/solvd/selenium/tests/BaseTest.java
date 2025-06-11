@@ -16,11 +16,21 @@ import java.time.Duration;
 
 public class BaseTest {
 
-    protected WebDriver driver;
+    private static final Duration IMPLICIT_WAIT = Duration.ofSeconds(10);
+    private static final Duration PAGE_LOAD_TIMEOUT = Duration.ofSeconds(30);
+
+    private ThreadLocal<WebDriver> driver = new ThreadLocal<>();
+
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
+
     protected static final String BASE_URL = "https://www.next.co.uk/";
     private static final String SELENIUM_HUB_URL = "http://localhost:4444";
-    private boolean useRemoteDriver = false; // Flag to determine if remote driver should be used
+
+    private boolean useRemoteDriver = false;
+
+    protected WebDriver getDriver() {
+        return driver.get();
+    }
 
     @BeforeMethod
     @Parameters({ "browser", "remote" })
@@ -36,12 +46,11 @@ public class BaseTest {
         }
 
         // Common settings
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(30));
-        driver.manage().window().maximize();
+        getDriver().manage().timeouts().implicitlyWait(IMPLICIT_WAIT);
+        getDriver().manage().timeouts().pageLoadTimeout(PAGE_LOAD_TIMEOUT);
+        getDriver().manage().window().maximize();
 
-        logger.info("WebDriver setup completed - Mode: {}",
-                useRemoteDriver ? "Remote" : "Local");
+        logger.info("WebDriver setup completed - Mode: {}", useRemoteDriver ? "Remote" : "Local");
     }
 
     /**
@@ -54,7 +63,7 @@ public class BaseTest {
 
         WebDriverManager.chromedriver().setup();
         ChromeOptions chromeOptions = getChromeOptions();
-        driver = new ChromeDriver(chromeOptions);
+        driver.set(new ChromeDriver(chromeOptions));
     }
 
     /**
@@ -68,7 +77,7 @@ public class BaseTest {
 
             URL hubUrl = new URL(SELENIUM_HUB_URL);
             ChromeOptions chromeOptions = getChromeOptions();
-            driver = new RemoteWebDriver(hubUrl, chromeOptions);
+            driver.set(new RemoteWebDriver(hubUrl, chromeOptions));
 
             logger.info("Connected to Selenium Hub at: {}", SELENIUM_HUB_URL);
 
@@ -100,15 +109,16 @@ public class BaseTest {
 
     @AfterMethod
     public void tearDown() {
-        if (driver != null) {
+        if (getDriver() != null) {
             logger.info("Closing WebDriver - Session ID: {}",
-                    ((RemoteWebDriver) driver).getSessionId());
-            driver.quit();
+                    ((RemoteWebDriver) getDriver()).getSessionId());
+            getDriver().quit();
+            driver.remove();
         }
     }
 
     protected void navigateToHomePage() {
         logger.info("Navigating to: {}", BASE_URL);
-        driver.get(BASE_URL);
+        getDriver().get(BASE_URL);
     }
 }
