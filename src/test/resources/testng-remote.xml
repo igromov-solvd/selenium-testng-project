@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="RemoteSeleniumTestSuite" verbose="1">
+
+    <!-- Default parameters -->
+    <parameter name="browser" value="chrome" />
+    <parameter name="remote" value="true" />
+
+    <test name="RemoteProductSearchTests">
+        <classes>
+            <class name="com.solvd.selenium.tests.ProductSearchTest" />
+        </classes>
+    </test>
+
+</suite>
