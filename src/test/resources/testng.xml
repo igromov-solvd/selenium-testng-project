@@ -1,14 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="LocalSeleniumTestSuite" verbose="1">
+<suite name="LocalSeleniumTestSuite" verbose="1" parallel="tests" thread-count="3">
 
     <!-- Parameters for local execution -->
-    <parameter name="browser" value="chrome" />
+    <parameter name="browser" value="firefox" />
     <parameter name="remote" value="false" />
 
-    <test name="LocalProductSearchTests">
+    <test name="HomePageTests">
         <classes>
-            <class name="com.solvd.selenium.tests.ProductSearchTest" />
+            <class name="com.solvd.selenium.HomePageTest" />
         </classes>
     </test>
+
+    <test name="SearchFunctionalityTests">
+        <classes>
+            <class name="com.solvd.selenium.SearchFunctionalityTest" />
+        </classes>
+    </test>
+
+    <test name="NavigationTests">
+        <classes>
+            <class name="com.solvd.selenium.NavigationMenuTest" />
+        </classes>
+    </test>
+
+    <test name="ProductDetailTests">
+        <classes>
+            <class name="com.solvd.selenium.ProductDetailPageTest" />
+        </classes>
+    </test>
+
+    <test name="AddToBagTest">
+        <classes>
+            <class name="com.solvd.selenium.AddToBagTest" />
+        </classes>
+    </test>
+
+    <test name="RemoveFromBagTest">
+        <classes>
+            <class name="com.solvd.selenium.RemoveFromBagTest" />
+        </classes>
+    </test>
+
+    <test name="UpdateQuantityTest">
+        <classes>
+            <class name="com.solvd.selenium.UpdateQuantityTest" />
+        </classes>
+    </test>
+
 </suite>
