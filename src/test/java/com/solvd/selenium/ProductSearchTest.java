@@ -1,4 +1,4 @@
-package com.solvd.selenium.tests;
+package com.solvd.selenium;
 
 import com.solvd.selenium.pages.HomePage;
 import com.solvd.selenium.pages.SearchResultsPage;
