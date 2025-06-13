@@ -1,14 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="RemoteSeleniumTestSuite" verbose="1">
+<suite name="RemoteSeleniumTestSuite" verbose="1" parallel="tests" thread-count="5">
 
     <!-- Default parameters -->
-    <parameter name="browser" value="chrome" />
+    <parameter name="browser" value="firefox" />
     <parameter name="remote" value="true" />
 
-    <test name="RemoteProductSearchTests">
+    <test name="Remote_HomePageTests">
         <classes>
-            <class name="com.solvd.selenium.tests.ProductSearchTest" />
+            <class name="com.solvd.selenium.HomePageTest" />
+        </classes>
+    </test>
+
+    <test name="Remote_SearchFunctionalityTests">
+        <classes>
+            <class name="com.solvd.selenium.SearchFunctionalityTest" />
+            <class name="com.solvd.selenium.ProductSearchTest" />
+        </classes>
+    </test>
+
+    <test name="Remote_NavigationTests">
+        <classes>
+            <class name="com.solvd.selenium.NavigationMenuTest" />
+        </classes>
+    </test>
+
+    <test name="Remote_ProductDetailTests">
+        <classes>
+            <class name="com.solvd.selenium.ProductDetailPageTest" />
+        </classes>
+    </test>
+
+    <test name="AddToBagTest">
+        <classes>
+            <class name="com.solvd.selenium.AddToBagTest" />
+        </classes>
+    </test>
+
+    <test name="RemoveFromBagTest">
+        <classes>
+            <class name="com.solvd.selenium.RemoveFromBagTest" />
+        </classes>
+    </test>
+
+    <test name="UpdateQuantityTest">
+        <classes>
+            <class name="com.solvd.selenium.UpdateQuantityTest" />
         </classes>
     </test>
 

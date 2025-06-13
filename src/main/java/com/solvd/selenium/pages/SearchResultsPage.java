@@ -15,6 +15,18 @@ public class SearchResultsPage extends BasePage {
     @FindBy(css = "h1[data-testid='plp-results-title']")
     private WebElement pageTitle;
 
+    @FindBy(css = "div[data-testid='plp-desktop-sort-button']")
+    private WebElement sortingContainer;
+
+    @FindBy(css = "header[data-testid='plp-filters-component-desktop']")
+    private WebElement filtersContainer;
+
+    @FindBy(css = "p[data-testid='product_summary_was_price'] > span")
+    private List<WebElement> productPrices;
+
+    @FindBy(css = "img[data-testid^='product_summary_image']")
+    private List<WebElement> productImages;
+
     public SearchResultsPage(WebDriver driver) {
         super(driver);
     }
@@ -53,6 +65,42 @@ public class SearchResultsPage extends BasePage {
         } catch (Exception e) {
             logger.warn("Could not get page title", e);
             return "";
+        }
+    }
+
+    public boolean areFiltersVisible() {
+        try {
+            return wait.until(ExpectedConditions.visibilityOf(filtersContainer)).isDisplayed();
+        } catch (Exception e) {
+            logger.warn("Filters container not visible", e);
+            return false;
+        }
+    }
+
+    public boolean isSortingVisible() {
+        try {
+            return wait.until(ExpectedConditions.visibilityOf(sortingContainer)).isDisplayed();
+        } catch (Exception e) {
+            logger.warn("Sorting container not visible", e);
+            return false;
+        }
+    }
+
+    public boolean areProductPricesVisible() {
+        try {
+            return !productPrices.isEmpty() && productPrices.get(0).isDisplayed();
+        } catch (Exception e) {
+            logger.warn("Product prices not visible", e);
+            return false;
+        }
+    }
+
+    public boolean areProductImagesVisible() {
+        try {
+            return !productImages.isEmpty() && productImages.get(0).isDisplayed();
+        } catch (Exception e) {
+            logger.warn("Product images not visible", e);
+            return false;
         }
     }
 }

@@ -1,15 +1,19 @@
-package com.solvd.selenium.tests;
+package com.solvd.selenium;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Optional;
 import org.testng.annotations.Parameters;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
@@ -17,7 +21,7 @@ import java.time.Duration;
 public class BaseTest {
 
     private static final Duration IMPLICIT_WAIT = Duration.ofSeconds(10);
-    private static final Duration PAGE_LOAD_TIMEOUT = Duration.ofSeconds(30);
+    private static final Duration PAGE_LOAD_TIMEOUT = Duration.ofSeconds(20);
 
     private ThreadLocal<WebDriver> driver = new ThreadLocal<>();
 
@@ -26,6 +30,7 @@ public class BaseTest {
     protected static final String BASE_URL = "https://www.next.co.uk/";
     private static final String SELENIUM_HUB_URL = "http://localhost:4444";
 
+    private String browserName;
     private boolean useRemoteDriver = false;
 
     protected WebDriver getDriver() {
@@ -34,9 +39,10 @@ public class BaseTest {
 
     @BeforeMethod
     @Parameters({ "browser", "remote" })
-    public void setUp(String browser, String remote) {
+    public void setUp(@Optional("firefox") String browser, @Optional("false") String remote) {
         logger.info("Setting up WebDriver - Browser: {}, Remote: {}", browser, remote);
 
+        this.browserName = browser.toLowerCase();
         this.useRemoteDriver = Boolean.parseBoolean(remote);
 
         if (useRemoteDriver) {
@@ -54,30 +60,48 @@ public class BaseTest {
     }
 
     /**
-     * Setup local WebDriver (Chrome only)
+     * Setup local WebDriver
      */
     private void setupLocalDriver(String browser) {
-        if (!"chrome".equalsIgnoreCase(browser)) {
-            throw new IllegalArgumentException("Only Chrome browser is supported: " + browser);
-        }
+        switch (browser.toLowerCase()) {
+            case "chrome":
+                WebDriverManager.chromedriver().setup();
+                ChromeOptions chromeOptions = getChromeOptions();
+                driver.set(new ChromeDriver(chromeOptions));
+                break;
 
-        WebDriverManager.chromedriver().setup();
-        ChromeOptions chromeOptions = getChromeOptions();
-        driver.set(new ChromeDriver(chromeOptions));
+            case "firefox":
+                WebDriverManager.firefoxdriver().setup();
+                FirefoxOptions firefoxOptions = getFirefoxOptions();
+                driver.set(new FirefoxDriver(firefoxOptions));
+                break;
+
+            default:
+                throw new IllegalArgumentException("Unsupported browser: " + browser);
+        }
     }
 
     /**
-     * Setup remote WebDriver through Selenium Server (Chrome only)
+     * Setup remote WebDriver
      */
     private void setupRemoteDriver(String browser) {
         try {
-            if (!"chrome".equalsIgnoreCase(browser)) {
-                throw new IllegalArgumentException("Only Chrome browser is supported: " + browser);
-            }
-
             URL hubUrl = new URL(SELENIUM_HUB_URL);
-            ChromeOptions chromeOptions = getChromeOptions();
-            driver.set(new RemoteWebDriver(hubUrl, chromeOptions));
+
+            switch (browser.toLowerCase()) {
+                case "chrome":
+                    ChromeOptions chromeOptions = getChromeOptions();
+                    driver.set(new RemoteWebDriver(hubUrl, chromeOptions));
+                    break;
+
+                case "firefox":
+                    FirefoxOptions firefoxOptions = getFirefoxOptions();
+                    driver.set(new RemoteWebDriver(hubUrl, firefoxOptions));
+                    break;
+
+                default:
+                    throw new IllegalArgumentException("Unsupported browser for remote execution: " + browser);
+            }
 
             logger.info("Connected to Selenium Hub at: {}", SELENIUM_HUB_URL);
 
@@ -88,7 +112,7 @@ public class BaseTest {
     }
 
     /**
-     * Common Chrome settings
+     * Chrome-specific options
      */
     private ChromeOptions getChromeOptions() {
         ChromeOptions options = new ChromeOptions();
@@ -98,7 +122,6 @@ public class BaseTest {
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--remote-allow-origins=*");
 
-        // Additional options for remote execution
         if (useRemoteDriver) {
             options.addArguments("--disable-gpu");
             options.addArguments("--window-size=1920,1080");
@@ -107,13 +130,38 @@ public class BaseTest {
         return options;
     }
 
+    /**
+     * Firefox-specific options
+     */
+    private FirefoxOptions getFirefoxOptions() {
+        FirefoxOptions options = new FirefoxOptions();
+        options.addPreference("dom.webdriver.enabled", false);
+        options.addPreference("useAutomationExtension", false);
+        options.addArguments("--no-sandbox");
+
+        if (useRemoteDriver) {
+            options.addArguments("--width=1920");
+            options.addArguments("--height=1080");
+        }
+
+        return options;
+    }
+
     @AfterMethod
     public void tearDown() {
         if (getDriver() != null) {
-            logger.info("Closing WebDriver - Session ID: {}",
-                    ((RemoteWebDriver) getDriver()).getSessionId());
-            getDriver().quit();
-            driver.remove();
+            try {
+                if (getDriver() instanceof RemoteWebDriver) {
+                    logger.info("Closing WebDriver - Session ID: {}", ((RemoteWebDriver) getDriver()).getSessionId());
+                } else {
+                    logger.info("Closing WebDriver (Local) - Browser: {}", browserName);
+                }
+                getDriver().quit();
+            } catch (Exception e) {
+                logger.error("Error while closing WebDriver for browser {}: {}", browserName, e.getMessage(), e);
+            } finally {
+                driver.remove();
+            }
         }
     }
 
