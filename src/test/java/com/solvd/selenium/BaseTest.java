@@ -1,6 +1,9 @@
 package com.solvd.selenium;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -9,19 +12,26 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Parameters;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.util.Date;
 
 public class BaseTest {
 
     private static final Duration IMPLICIT_WAIT = Duration.ofSeconds(10);
     private static final Duration PAGE_LOAD_TIMEOUT = Duration.ofSeconds(20);
+    private static final String SCREENSHOT_DIR = "test-output/screenshots/";
 
     private ThreadLocal<WebDriver> driver = new ThreadLocal<>();
 
@@ -138,17 +148,23 @@ public class BaseTest {
         options.addPreference("dom.webdriver.enabled", false);
         options.addPreference("useAutomationExtension", false);
         options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage"); // Not typically needed for Firefox, but included for consistency
 
         if (useRemoteDriver) {
             options.addArguments("--width=1920");
             options.addArguments("--height=1080");
         }
 
+        logger.info("Firefox options: {}", options);
         return options;
     }
 
     @AfterMethod
-    public void tearDown() {
+    public void tearDown(ITestResult result) {
+        if (result.getStatus() == ITestResult.FAILURE) {
+            captureScreenshot(result.getName());
+        }
+
         if (getDriver() != null) {
             try {
                 if (getDriver() instanceof RemoteWebDriver) {
@@ -168,5 +184,29 @@ public class BaseTest {
     protected void navigateToHomePage() {
         logger.info("Navigating to: {}", BASE_URL);
         getDriver().get(BASE_URL);
+    }
+
+    private void captureScreenshot(String testName) {
+        try {
+            // Create screenshots directory if it doesn't exist
+            File directory = new File(SCREENSHOT_DIR);
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
+
+            // Generate timestamp for filename
+            String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            String fileName = String.format("%s_%s_%s.png",
+                    testName, browserName, timestamp);
+
+            // Take screenshot
+            File screenshot = ((TakesScreenshot) getDriver()).getScreenshotAs(OutputType.FILE);
+            File destFile = new File(Paths.get(SCREENSHOT_DIR, fileName).toString());
+            FileUtils.copyFile(screenshot, destFile);
+
+            logger.info("Screenshot saved to: {}", destFile.getAbsolutePath());
+        } catch (IOException e) {
+            logger.error("Failed to capture screenshot: {}", e.getMessage(), e);
+        }
     }
 }
