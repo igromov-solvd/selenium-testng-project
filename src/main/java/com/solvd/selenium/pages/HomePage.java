@@ -57,6 +57,7 @@ public class HomePage extends BasePage {
     public HomePage(WebDriver driver) {
         super(driver);
         acceptCookiesIfPresent();
+        waitForPageLoad();
     }
 
     public void acceptCookiesIfPresent() {
@@ -69,63 +70,55 @@ public class HomePage extends BasePage {
         }
     }
 
-    public void enterSearchText(String searchText) {
-        wait.until(ExpectedConditions.elementToBeClickable(searchInput));
-        searchInput.clear();
-        searchInput.sendKeys(searchText);
-        logger.info("Entered search text: {}", searchText);
-    }
-
     public SearchResultsPage clickSearchButton() {
-        wait.until(ExpectedConditions.elementToBeClickable(searchButton));
-        searchButton.click();
-        logger.info("Clicked search button");
+        clickElement(searchButton);
         return new SearchResultsPage(driver);
     }
 
     public SearchResultsPage searchForProduct(String searchText) {
-        enterSearchText(searchText);
+        enterText(searchInput, searchText);
+        logger.info("Searching for product: {}", searchText);
         return clickSearchButton();
     }
 
     public boolean isDeliveryTitleVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(deliveryTitle)).isDisplayed();
+        return isElementVisible(deliveryTitle);
     }
 
     public String getDeliveryTitleText() {
-        return wait.until(ExpectedConditions.visibilityOf(deliveryTitle)).getText();
+        return getElementText(deliveryTitle);
     }
 
     public boolean isStoreLocatorVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(storeLocatorLink)).isDisplayed();
+        return isElementVisible(storeLocatorLink);
     }
 
     public boolean isHelpLinkVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(helpLink)).isDisplayed();
+        return isElementVisible(helpLink);
     }
 
     public boolean isLogoVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(logo)).isDisplayed();
+        return isElementVisible(logo);
     }
 
     public boolean isSearchBarVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(searchBar)).isDisplayed();
+        return isElementVisible(searchBar);
     }
 
     public boolean isAccountIconVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(accountIcon)).isDisplayed();
+        return isElementVisible(accountIcon);
     }
 
     public boolean isFavoritesIconVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(favoritesIcon)).isDisplayed();
+        return isElementVisible(favoritesIcon);
     }
 
     public boolean isShoppingBagIconVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(shoppingBagIcon)).isDisplayed();
+        return isElementVisible(shoppingBagIcon);
     }
 
     public boolean isCheckoutButtonVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(checkoutButton)).isDisplayed();
+        return isElementVisible(checkoutButton);
     }
 
     public boolean isMainMenuVisible() {
@@ -142,18 +135,23 @@ public class HomePage extends BasePage {
 
     public CategoryPage hoverOverMainCategoryAndClick(String category, String subCategory) {
         for (WebElement item : mainMenuItems) {
-            if (item.getText().equalsIgnoreCase(category)) {
-                Object actions = new org.openqa.selenium.interactions.Actions(driver);
-                ((Actions) actions).moveToElement(item).perform();
+            if (item.getText().trim().equalsIgnoreCase(category.trim())) {
+                Actions actions = new Actions(driver);
+                actions.moveToElement(item).pause(300).perform();
                 String subCategorySelector = String.format("a[title='%s']", subCategory);
-                WebElement subCategoryLink = wait.until(ExpectedConditions.elementToBeClickable(
-                        By.cssSelector(subCategorySelector)));
-                subCategoryLink.click();
-                logger.info("Hovered over category: {} and clicked on sub-category: {}", category, subCategory);
-                // break;
-                return new CategoryPage(driver);
+                try {
+                    WebElement subCategoryLink = wait.until(
+                            ExpectedConditions.elementToBeClickable(By.cssSelector(subCategorySelector)));
+                    subCategoryLink.click();
+                    logger.info("Hovered over category: {} and clicked on sub-category: {}", category, subCategory);
+                    return new CategoryPage(driver);
+                } catch (Exception e) {
+                    logger.error("Sub-category '{}' not found under category '{}'", subCategory, category, e);
+                    return null;
+                }
             }
         }
+        logger.warn("Main category '{}' not found in menu", category);
         return null;
     }
 }
