@@ -12,6 +12,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.solvd.selenium.config.ConfigManager;
+
 /**
  * BasePage class provides common functionality for all page objects in the
  * Selenium framework.
@@ -19,14 +21,15 @@ import org.slf4j.LoggerFactory;
  * conditions, and logging.
  */
 public abstract class BasePage {
-    protected static final Duration EXPLICIT_WAIT = Duration.ofSeconds(15);
+    // protected static final Duration EXPLICIT_WAIT = Duration.ofSeconds(15);
     protected WebDriver driver;
     protected WebDriverWait wait;
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
+    protected final ConfigManager config = ConfigManager.getInstance();
 
     public BasePage(WebDriver driver) {
         this.driver = driver;
-        this.wait = new WebDriverWait(driver, EXPLICIT_WAIT);
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(config.getImplicitWaitSeconds()));
         PageFactory.initElements(driver, this);
     }
 

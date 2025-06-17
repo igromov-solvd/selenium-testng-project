@@ -58,7 +58,7 @@ public class RemoveFromBagTest extends BaseTest {
         shoppingBagPage.clickContinueShopping();
 
         // Verify navigation back to homepage
-        Assert.assertTrue(getDriver().getCurrentUrl().contains(BASE_URL),
+        Assert.assertTrue(getDriver().getCurrentUrl().contains(config.getBaseUrl()),
                 "Should be back on homepage after continuing shopping");
 
         logger.info("Remove from bag test completed successfully");

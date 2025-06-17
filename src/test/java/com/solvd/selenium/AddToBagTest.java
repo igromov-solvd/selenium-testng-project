@@ -47,10 +47,12 @@ public class AddToBagTest extends BaseTest {
                 "Bag item should be visible");
         Assert.assertTrue(shoppingBagPage.isFirstBagItemPriceVisible(),
                 "Price should be visible");
-        Assert.assertTrue(shoppingBagPage.isFirstBagItemQuantityVisible(),
-                "Quantity should be visible");
-        Assert.assertTrue(shoppingBagPage.isFirstBagItemRemoveButtonVisible(),
-                "Remove button should be visible");
+        org.testng.asserts.SoftAssert softAssert = new org.testng.asserts.SoftAssert();
+        softAssert.assertTrue(shoppingBagPage.isFirstBagItemQuantityVisible(),
+            "Quantity should be visible");
+        softAssert.assertTrue(shoppingBagPage.isFirstBagItemRemoveButtonVisible(),
+            "Remove button should be visible");
+        softAssert.assertAll();
 
         logger.info("Add to bag test completed successfully");
     }
