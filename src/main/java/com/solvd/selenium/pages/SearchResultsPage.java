@@ -29,6 +29,7 @@ public class SearchResultsPage extends BasePage {
 
     public SearchResultsPage(WebDriver driver) {
         super(driver);
+        waitForPageLoad();
     }
 
     public List<String> getProductTitles() {
@@ -59,48 +60,22 @@ public class SearchResultsPage extends BasePage {
     }
 
     public String getPageTitleText() {
-        try {
-            wait.until(ExpectedConditions.visibilityOf(pageTitle));
-            return pageTitle.getText();
-        } catch (Exception e) {
-            logger.warn("Could not get page title", e);
-            return "";
-        }
+        return getElementText(pageTitle);
     }
 
     public boolean areFiltersVisible() {
-        try {
-            return wait.until(ExpectedConditions.visibilityOf(filtersContainer)).isDisplayed();
-        } catch (Exception e) {
-            logger.warn("Filters container not visible", e);
-            return false;
-        }
+        return isElementVisible(filtersContainer);
     }
 
     public boolean isSortingVisible() {
-        try {
-            return wait.until(ExpectedConditions.visibilityOf(sortingContainer)).isDisplayed();
-        } catch (Exception e) {
-            logger.warn("Sorting container not visible", e);
-            return false;
-        }
+        return isElementVisible(sortingContainer);
     }
 
-    public boolean areProductPricesVisible() {
-        try {
-            return !productPrices.isEmpty() && productPrices.get(0).isDisplayed();
-        } catch (Exception e) {
-            logger.warn("Product prices not visible", e);
-            return false;
-        }
+    public boolean areProductPricesPresent() {
+        return areElementsPresent(productPrices);
     }
 
-    public boolean areProductImagesVisible() {
-        try {
-            return !productImages.isEmpty() && productImages.get(0).isDisplayed();
-        } catch (Exception e) {
-            logger.warn("Product images not visible", e);
-            return false;
-        }
+    public boolean areProductImagesPresent() {
+        return areElementsPresent(productImages);
     }
 }

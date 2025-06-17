@@ -3,7 +3,6 @@ package com.solvd.selenium.pages;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import java.util.List;
 
 public class CategoryPage extends BasePage {
@@ -22,10 +21,11 @@ public class CategoryPage extends BasePage {
 
     public CategoryPage(WebDriver driver) {
         super(driver);
+        waitForPageLoad();
     }
 
     public String getPageTitle() {
-        return wait.until(ExpectedConditions.visibilityOf(pageTitle)).getText();
+        return getElementText(pageTitle);
     }
 
     public boolean areProductsVisible() {
@@ -33,15 +33,15 @@ public class CategoryPage extends BasePage {
     }
 
     public boolean areFiltersVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(filtersContainer)).isDisplayed();
+        return isElementVisible(filtersContainer);
     }
 
     public boolean isSortingVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(sortingContainer)).isDisplayed();
+        return isElementVisible(sortingContainer);
     }
 
     public ProductPage clickFirstProduct() {
-        wait.until(ExpectedConditions.elementToBeClickable(products.get(0))).click();
+        clickElement(products.get(0));
         return new ProductPage(driver);
     }
 }

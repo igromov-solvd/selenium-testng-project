@@ -1,10 +1,8 @@
 package com.solvd.selenium.pages;
 
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import java.util.List;
 
 public class ProductPage extends BasePage {
@@ -21,8 +19,14 @@ public class ProductPage extends BasePage {
     @FindBy(css = "button[data-testid^='pdp-thumb']")
     private List<WebElement> productImages;
 
-    @FindBy(css = "div[data-testid='size-select']")
+    @FindBy(css = "[data-testid='item-form-size-control']")
     private WebElement sizeSelector;
+
+    @FindBy(css = "[data-testid='size-chips-button-group'] > button:not(.unavailable):first-of-type")
+    private WebElement firstAvailableSize;
+
+    @FindBy(css = "[data-testid='item-form-stock-status'] > p")
+    private WebElement inStock;
 
     @FindBy(css = "div[data-testid='colour-chips-button-group']")
     private WebElement colorSelector;
@@ -47,18 +51,19 @@ public class ProductPage extends BasePage {
 
     public ProductPage(WebDriver driver) {
         super(driver);
+        waitForPageLoad();
     }
 
     public boolean isProductNameVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(productName)).isDisplayed();
+        return isElementVisible(productName);
     }
 
     public boolean isProductPriceVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(productPrice)).isDisplayed();
+        return isElementVisible(productPrice);
     }
 
     public boolean isProductDescriptionVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(productDescription)).isDisplayed();
+        return isElementVisible(productDescription);
     }
 
     public boolean areProductImagesVisible() {
@@ -66,66 +71,48 @@ public class ProductPage extends BasePage {
     }
 
     public boolean isSizeSelectionVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(sizeSelector)).isDisplayed();
+        return isElementVisible(sizeSelector);
     }
 
     public boolean isColorSelectionVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(colorSelector)).isDisplayed();
+        return isElementVisible(colorSelector);
     }
 
     public boolean isAddToBagButtonVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(addToBagButton)).isDisplayed();
+        return isElementVisible(addToBagButton);
     }
 
     public boolean isFavouriteButtonVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(favouriteButton)).isDisplayed();
+        return isElementVisible(favouriteButton);
     }
 
     public boolean hasReviewsSection() {
-        try {
-            return reviewsSection.isDisplayed();
-        } catch (Exception e) {
-            return false;
-        }
+        return isElementVisible(reviewsSection);
     }
 
     public void selectFirstAvailableSize() {
-        wait.until(ExpectedConditions.elementToBeClickable(sizeSelector)).click();
-        By firstAvailableSize = By
-                .xpath("//ul[@aria-labelledby='size-input-label']/li[not(contains(., 'unavailable'))][1]");
-        WebElement firstSize = wait.until(ExpectedConditions.elementToBeClickable(
-                firstAvailableSize));
-        firstSize.click();
-        By sizeDropdown = By.cssSelector("ul[aria-labelledby='size-input-label']");
-        // Wait for the size dropdown to disappear
-        wait.until(ExpectedConditions.invisibilityOfElementLocated(sizeDropdown));
-        // Wait condition for the dropdown also not present in DOM
-        wait.until(ExpectedConditions.not(ExpectedConditions.presenceOfAllElementsLocatedBy(
-                sizeDropdown)));
+        clickElement(firstAvailableSize);
+        waitForElementText(inStock, "In stock");
     }
 
     public void clickAddToBag() {
-        wait.until(ExpectedConditions.elementToBeClickable(addToBagButton)).click();
+        clickElement(addToBagButton);
     }
 
     public boolean isAddToBagConfirmationVisible() {
-        try {
-            return wait.until(ExpectedConditions.visibilityOf(addToBagConfirmation)).isDisplayed();
-        } catch (Exception e) {
-            return false;
-        }
+        return isElementVisible(addToBagConfirmation);
     }
 
     public ShoppingBagPage clickViewBagButton() {
-        wait.until(ExpectedConditions.elementToBeClickable(viewBagButton)).click();
+        clickElement(viewBagButton);
         return new ShoppingBagPage(driver);
     }
 
     public boolean isCheckoutButtonVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(checkoutButton)).isDisplayed();
+        return isElementVisible(checkoutButton);
     }
 
     public void clickCheckoutButton() {
-        wait.until(ExpectedConditions.elementToBeClickable(checkoutButton)).click();
+        clickElement(checkoutButton);
     }
 }

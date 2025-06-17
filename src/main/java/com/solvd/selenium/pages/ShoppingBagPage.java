@@ -3,7 +3,6 @@ package com.solvd.selenium.pages;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class ShoppingBagPage extends BasePage {
 
@@ -36,42 +35,43 @@ public class ShoppingBagPage extends BasePage {
 
     public ShoppingBagPage(WebDriver driver) {
         super(driver);
+        waitForPageLoad();
     }
 
     public boolean isFirstBagItemVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(firstBagItem)).isDisplayed();
+        return isElementVisible(firstBagItem);
     }
 
     public boolean isFirstBagItemPriceVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(firstBagItemPrice)).isDisplayed();
+        return isElementVisible(firstBagItemPrice);
     }
 
     public boolean isFirstBagItemQuantityVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(firstBagItemQuantity)).isDisplayed();
+        return isElementVisible(firstBagItemQuantity);
     }
 
     public boolean isFirstBagItemRemoveButtonVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(firstBagItemRemoveButton)).isDisplayed();
+        return isElementVisible(firstBagItemRemoveButton);
     }
 
     public void clickFirstBagItemRemoveButton() {
-        wait.until(ExpectedConditions.elementToBeClickable(firstBagItemRemoveButton)).click();
+        clickElement(firstBagItemRemoveButton);
     }
 
     public boolean isEmptyBagMessageVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(emptyBagMessage)).isDisplayed();
+        return isElementVisible(emptyBagMessage);
     }
 
     public String getEmptyBagMessageText() {
-        return wait.until(ExpectedConditions.visibilityOf(emptyBagMessage)).getText();
+        return getElementText(emptyBagMessage);
     }
 
     public boolean isContinueShoppingVisible() {
-        return wait.until(ExpectedConditions.visibilityOf(continueShoppingButton)).isDisplayed();
+        return isElementVisible(continueShoppingButton);
     }
 
     public void clickContinueShopping() {
-        wait.until(ExpectedConditions.elementToBeClickable(continueShoppingButton)).click();
+        clickElement(continueShoppingButton);
     }
 
     public int getQuantity() {
@@ -79,7 +79,7 @@ public class ShoppingBagPage extends BasePage {
     }
 
     public void clickOnQuantityCountPlus() {
-        wait.until(ExpectedConditions.elementToBeClickable(quantityCountPlus)).click();
+        clickElement(quantityCountPlus);
     }
 
     public double getProductPrice() {
@@ -93,6 +93,7 @@ public class ShoppingBagPage extends BasePage {
                 double currentValue = Double.parseDouble(priceText);
                 return Double.compare(currentValue, expectedNewValue) == 0;
             } catch (NumberFormatException e) {
+                logger.warn("Failed to parse total price: {}", priceText, e);
                 return false;
             }
         });
