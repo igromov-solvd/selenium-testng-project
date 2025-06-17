@@ -1,5 +1,6 @@
 package com.solvd.selenium;
 
+import com.solvd.selenium.config.ConfigManager;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.OutputType;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Parameters;
 
@@ -29,17 +31,11 @@ import java.util.Date;
 
 public class BaseTest {
 
-    private static final Duration IMPLICIT_WAIT = Duration.ofSeconds(10);
-    private static final Duration PAGE_LOAD_TIMEOUT = Duration.ofSeconds(20);
-    private static final String SCREENSHOT_DIR = "test-output/screenshots/";
+    protected static final Logger logger = LoggerFactory.getLogger(BaseTest.class);
+
+    protected final ConfigManager config = ConfigManager.getInstance();
 
     private ThreadLocal<WebDriver> driver = new ThreadLocal<>();
-
-    protected Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    protected static final String BASE_URL = "https://www.next.co.uk/";
-    private static final String SELENIUM_HUB_URL = "http://localhost:4444";
-
     private String browserName;
     private boolean useRemoteDriver = false;
 
@@ -47,26 +43,61 @@ public class BaseTest {
         return driver.get();
     }
 
+    @BeforeSuite
+    public void cleanScreenshotsFolder() {
+        String screenshotDir = config.getScreenshotDirectory();
+        File directory = new File(screenshotDir);
+
+        if (directory.exists()) {
+            try {
+                FileUtils.cleanDirectory(directory);
+                logger.info("Cleaned screenshots directory: {}", screenshotDir);
+            } catch (IOException e) {
+                logger.error("Failed to clean screenshots directory: {}", e.getMessage(), e);
+            }
+        } else {
+            directory.mkdirs();
+            logger.info("Created screenshots directory: {}", screenshotDir);
+        }
+    }
+
     @BeforeMethod
     @Parameters({ "browser", "remote" })
-    public void setUp(@Optional("firefox") String browser, @Optional("false") String remote) {
-        logger.info("Setting up WebDriver - Browser: {}, Remote: {}", browser, remote);
-
-        this.browserName = browser.toLowerCase();
-        this.useRemoteDriver = Boolean.parseBoolean(remote);
-
-        if (useRemoteDriver) {
-            setupRemoteDriver(browser);
-        } else {
-            setupLocalDriver(browser);
+    public void setUp(@Optional String browser, @Optional String remote) {
+        // Use TestNG parameters if provided, otherwise configuration is required
+        if (browser == null && !config.hasProperty("default.browser")) {
+            throw new RuntimeException(
+                    "Browser must be specified either as TestNG parameter or 'default.browser' in config");
+        }
+        if (remote == null && !config.hasProperty("remote.execution.enabled")) {
+            throw new RuntimeException(
+                    "Remote execution must be specified either as TestNG parameter or 'remote.execution.enabled' in config");
         }
 
-        // Common settings
-        getDriver().manage().timeouts().implicitlyWait(IMPLICIT_WAIT);
-        getDriver().manage().timeouts().pageLoadTimeout(PAGE_LOAD_TIMEOUT);
+        String browserParam = browser != null ? browser : config.getDefaultBrowser();
+        String remoteParam = remote != null ? remote : String.valueOf(config.isRemoteExecutionEnabled());
+
+        logger.info("Setting up WebDriver - Browser: {}, Remote: {}", browserParam, remoteParam);
+
+        this.browserName = browserParam.toLowerCase();
+        this.useRemoteDriver = Boolean.parseBoolean(remoteParam);
+
+        if (useRemoteDriver) {
+            setupRemoteDriver(browserParam);
+        } else {
+            setupLocalDriver(browserParam);
+        }
+
+        // Common settings using configuration
+        Duration implicitWait = Duration.ofSeconds(config.getImplicitWaitSeconds());
+        Duration pageLoadTimeout = Duration.ofSeconds(config.getPageLoadTimeoutSeconds());
+
+        getDriver().manage().timeouts().implicitlyWait(implicitWait);
+        getDriver().manage().timeouts().pageLoadTimeout(pageLoadTimeout);
         getDriver().manage().window().maximize();
 
-        logger.info("WebDriver setup completed - Mode: {}", useRemoteDriver ? "Remote" : "Local");
+        logger.info("WebDriver setup completed - Mode: {}, Implicit Wait: {}s, Page Load Timeout: {}s",
+                useRemoteDriver ? "Remote" : "Local", implicitWait.getSeconds(), pageLoadTimeout.getSeconds());
     }
 
     /**
@@ -96,28 +127,30 @@ public class BaseTest {
      */
     private void setupRemoteDriver(String browser) {
         try {
-            URL hubUrl = new URL(SELENIUM_HUB_URL);
+            String hubUrl = config.getSeleniumHubUrl();
+            URL seleniumHubUrl = new URL(hubUrl);
 
             switch (browser.toLowerCase()) {
                 case "chrome":
                     ChromeOptions chromeOptions = getChromeOptions();
-                    driver.set(new RemoteWebDriver(hubUrl, chromeOptions));
+                    driver.set(new RemoteWebDriver(seleniumHubUrl, chromeOptions));
                     break;
 
                 case "firefox":
                     FirefoxOptions firefoxOptions = getFirefoxOptions();
-                    driver.set(new RemoteWebDriver(hubUrl, firefoxOptions));
+                    driver.set(new RemoteWebDriver(seleniumHubUrl, firefoxOptions));
                     break;
 
                 default:
                     throw new IllegalArgumentException("Unsupported browser for remote execution: " + browser);
             }
 
-            logger.info("Connected to Selenium Hub at: {}", SELENIUM_HUB_URL);
+            logger.info("Connected to Selenium Hub at: {}", hubUrl);
 
         } catch (MalformedURLException e) {
-            logger.error("Invalid Selenium Hub URL: {}", SELENIUM_HUB_URL, e);
-            throw new RuntimeException("Failed to setup remote driver", e);
+            String hubUrl = config.getSeleniumHubUrl();
+            logger.error("Invalid Selenium Hub URL: {}", hubUrl, e);
+            throw new RuntimeException("Failed to setup remote driver due to invalid Hub URL", e);
         }
     }
 
@@ -134,7 +167,9 @@ public class BaseTest {
 
         if (useRemoteDriver) {
             options.addArguments("--disable-gpu");
-            options.addArguments("--window-size=1920,1080");
+            int width = config.getWindowWidth();
+            int height = config.getWindowHeight();
+            options.addArguments(String.format("--window-size=%d,%d", width, height));
         }
 
         return options;
@@ -148,20 +183,24 @@ public class BaseTest {
         options.addPreference("dom.webdriver.enabled", false);
         options.addPreference("useAutomationExtension", false);
         options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage"); // Not typically needed for Firefox, but included for consistency
+        options.addArguments("--disable-dev-shm-usage");
 
         if (useRemoteDriver) {
-            options.addArguments("--width=1920");
-            options.addArguments("--height=1080");
+            int width = config.getWindowWidth();
+            int height = config.getWindowHeight();
+            options.addArguments(String.format("--width=%d", width));
+            options.addArguments(String.format("--height=%d", height));
         }
 
-        logger.info("Firefox options: {}", options);
+        logger.debug("Firefox options configured");
         return options;
     }
 
     @AfterMethod
     public void tearDown(ITestResult result) {
-        if (result.getStatus() == ITestResult.FAILURE) {
+        boolean screenshotOnFailure = config.isScreenshotOnFailureEnabled();
+
+        if (result.getStatus() == ITestResult.FAILURE && screenshotOnFailure) {
             captureScreenshot(result.getName());
         }
 
@@ -182,31 +221,49 @@ public class BaseTest {
     }
 
     protected void navigateToHomePage() {
-        logger.info("Navigating to: {}", BASE_URL);
-        getDriver().get(BASE_URL);
+        String baseUrl = config.getBaseUrl();
+        logger.info("Navigating to: {}", baseUrl);
+        getDriver().get(baseUrl);
     }
 
     private void captureScreenshot(String testName) {
         try {
+            String screenshotDir = config.getScreenshotDirectory();
+
             // Create screenshots directory if it doesn't exist
-            File directory = new File(SCREENSHOT_DIR);
+            File directory = new File(screenshotDir);
             if (!directory.exists()) {
                 directory.mkdirs();
             }
 
             // Generate timestamp for filename
             String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-            String fileName = String.format("%s_%s_%s.png",
-                    testName, browserName, timestamp);
+            String fileName = String.format("%s_%s_%s.png", testName, browserName, timestamp);
 
             // Take screenshot
             File screenshot = ((TakesScreenshot) getDriver()).getScreenshotAs(OutputType.FILE);
-            File destFile = new File(Paths.get(SCREENSHOT_DIR, fileName).toString());
+            File destFile = new File(Paths.get(screenshotDir, fileName).toString());
             FileUtils.copyFile(screenshot, destFile);
 
             logger.info("Screenshot saved to: {}", destFile.getAbsolutePath());
         } catch (IOException e) {
             logger.error("Failed to capture screenshot: {}", e.getMessage(), e);
         }
+    }
+
+    /**
+     * Get the base URL from configuration
+     */
+    protected String getBaseUrl() {
+        return config.getBaseUrl();
+    }
+
+    /**
+     * Navigate to a specific URL relative to base URL
+     */
+    protected void navigateToPage(String relativePath) {
+        String fullUrl = getBaseUrl() + relativePath;
+        logger.info("Navigating to: {}", fullUrl);
+        getDriver().get(fullUrl);
     }
 }
