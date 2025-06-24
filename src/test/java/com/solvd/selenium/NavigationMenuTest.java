@@ -6,6 +6,7 @@ import org.testng.Assert;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
 
 public class NavigationMenuTest extends BaseTest {
 
@@ -33,13 +34,18 @@ public class NavigationMenuTest extends BaseTest {
         // Hover over Women category
         CategoryPage categoryPage = homePage.hoverOverMainCategoryAndClick(category, subCategory);
         Assert.assertNotNull(categoryPage, "Category page should not be null");
-        // Verify category page
-        Assert.assertEquals(categoryPage.getPageTitle().toLowerCase(), expectedTitle.toLowerCase(),
-                "Category page title should match expected title");
-        Assert.assertTrue(categoryPage.areProductsVisible(), "Products should be visible");
-        Assert.assertTrue(categoryPage.areFiltersVisible(), "Filters should be visible");
-        Assert.assertTrue(categoryPage.isSortingVisible(), "Sorting options should be visible");
 
+        verifyCategoryPageElements(categoryPage, expectedTitle);
         logger.info("Category navigation test completed successfully");
+    }
+
+    private void verifyCategoryPageElements(CategoryPage categoryPage, String expectedTitle) {
+        SoftAssert softAssert = new SoftAssert();
+        softAssert.assertEquals(categoryPage.getPageTitle().toLowerCase(), expectedTitle.toLowerCase(),
+                "Category page title should match expected title");
+        softAssert.assertTrue(categoryPage.areProductsVisible(), "Products should be visible");
+        softAssert.assertTrue(categoryPage.areFiltersVisible(), "Filters should be visible");
+        softAssert.assertTrue(categoryPage.isSortingVisible(), "Sorting options should be visible");
+        softAssert.assertAll();
     }
 }

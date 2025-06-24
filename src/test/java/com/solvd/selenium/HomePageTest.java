@@ -1,12 +1,11 @@
 package com.solvd.selenium;
 
 import com.solvd.selenium.pages.HomePage;
-
 import java.util.Arrays;
 import java.util.List;
-
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
 
 public class HomePageTest extends BaseTest {
 
@@ -30,28 +29,35 @@ public class HomePageTest extends BaseTest {
         navigateToHomePage();
         HomePage homePage = new HomePage(getDriver());
 
-        // Verify title text
+        verifyDeliverySection(homePage);
+        verifyHeaderElements(homePage);
+        verifyMainMenuCategories(homePage);
+
+        logger.info("Homepage elements verification test completed successfully");
+    }
+
+    private void verifyDeliverySection(HomePage homePage) {
         Assert.assertTrue(homePage.isDeliveryTitleVisible(), "Delivery title should be visible");
         Assert.assertEquals(homePage.getDeliveryTitleText(),
                 "Next day delivery to home or free to store*",
                 "Delivery title text is incorrect");
+    }
 
-        // Verify essential elements
-        Assert.assertTrue(homePage.isStoreLocatorVisible(), "Store Locator link should be visible");
-        Assert.assertTrue(homePage.isHelpLinkVisible(), "Help link should be visible");
-        Assert.assertTrue(homePage.isLogoVisible(), "Next logo should be visible");
-        Assert.assertTrue(homePage.isSearchBarVisible(), "Search bar should be visible");
-        Assert.assertTrue(homePage.isAccountIconVisible(), "Account icon should be visible");
-        Assert.assertTrue(homePage.isFavoritesIconVisible(), "Favorites icon should be visible");
-        Assert.assertTrue(homePage.isShoppingBagIconVisible(), "Shopping bag icon should be visible");
-        Assert.assertTrue(homePage.isCheckoutButtonVisible(), "Checkout button should be visible");
+    private void verifyHeaderElements(HomePage homePage) {
+        SoftAssert softAssert = new SoftAssert();
+        softAssert.assertTrue(homePage.isStoreLocatorVisible(), "Store Locator link should be visible");
+        softAssert.assertTrue(homePage.isHelpLinkVisible(), "Help link should be visible");
+        softAssert.assertTrue(homePage.isLogoVisible(), "Next logo should be visible");
+        softAssert.assertTrue(homePage.isSearchBarVisible(), "Search bar should be visible");
+        softAssert.assertTrue(homePage.isAccountIconVisible(), "Account icon should be visible");
+        softAssert.assertTrue(homePage.isFavoritesIconVisible(), "Favorites icon should be visible");
+        softAssert.assertTrue(homePage.isShoppingBagIconVisible(), "Shopping bag icon should be visible");
+        softAssert.assertTrue(homePage.isCheckoutButtonVisible(), "Checkout button should be visible");
+        softAssert.assertAll();
+    }
 
-        // Verify main navigation menu
-        // Assert.assertTrue(homePage.isMainMenuVisible(), "Main navigation menu should
-        // be visible");
+    private void verifyMainMenuCategories(HomePage homePage) {
         Assert.assertEquals(homePage.getMainMenuCategoriesList(), EXPECTED_CATEGORIES,
                 "Main menu categories are incorrect");
-
-        logger.info("Homepage elements verification test completed successfully");
     }
 }
