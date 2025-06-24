@@ -2,7 +2,7 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 <suite name="RemoteSeleniumTestSuite" verbose="1" parallel="tests" thread-count="5">
 
-    <!-- Default parameters -->
+    <!-- Global parameters for remote execution -->
     <parameter name="browser" value="firefox" />
     <parameter name="remote" value="true" />
 
@@ -20,30 +20,42 @@
     </test>
 
     <test name="Remote_NavigationTests">
+        <parameter name="category" value="Women" />
+        <parameter name="subCategory" value="All Dresses" />
+        <parameter name="expectedTitle" value="women's dresses" />
         <classes>
             <class name="com.solvd.selenium.NavigationMenuTest" />
         </classes>
     </test>
 
     <test name="Remote_ProductDetailTests">
+        <parameter name="category" value="Women" />
+        <parameter name="subCategory" value="All Dresses" />
         <classes>
             <class name="com.solvd.selenium.ProductDetailPageTest" />
         </classes>
     </test>
 
-    <test name="AddToBagTest">
+    <test name="Remote_AddToBagTest">
+        <parameter name="category" value="Women" />
+        <parameter name="subCategory" value="All Dresses" />
         <classes>
             <class name="com.solvd.selenium.AddToBagTest" />
         </classes>
     </test>
 
-    <test name="RemoveFromBagTest">
+    <test name="Remote_RemoveFromBagTest">
+        <parameter name="category" value="Women" />
+        <parameter name="subCategory" value="All Dresses" />
         <classes>
             <class name="com.solvd.selenium.RemoveFromBagTest" />
         </classes>
     </test>
 
-    <test name="UpdateQuantityTest">
+    <test name="Remote_UpdateQuantityTest">
+        <parameter name="category" value="Women" />
+        <parameter name="subCategory" value="All Dresses" />
+        <parameter name="newQuantity" value="2" />
         <classes>
             <class name="com.solvd.selenium.UpdateQuantityTest" />
         </classes>
