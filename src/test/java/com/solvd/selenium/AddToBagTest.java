@@ -5,7 +5,10 @@ import com.solvd.selenium.pages.CategoryPage;
 import com.solvd.selenium.pages.ProductPage;
 import com.solvd.selenium.pages.ShoppingBagPage;
 import org.testng.Assert;
+import org.testng.annotations.Optional;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
 
 public class AddToBagTest extends BaseTest {
 
@@ -17,9 +20,10 @@ public class AddToBagTest extends BaseTest {
      * and verifying the bag contents.
      */
     @Test(description = "Verify add product to bag functionality")
-    public void testAddToBag() {
-        String category = "Women";
-        String subCategory = "All Dresses";
+    @Parameters({ "category", "subCategory" })
+    public void testAddToBag(
+            @Optional("women") String category,
+            @Optional("All Dresses") String subCategory) {
         logger.info("Starting add to bag test");
 
         navigateToHomePage();
@@ -39,19 +43,18 @@ public class AddToBagTest extends BaseTest {
         Assert.assertTrue(productPage.isAddToBagConfirmationVisible(),
                 "Add to bag confirmation should be visible");
 
-        // View bag fronm confirmation
+        // View bag from confirmation
         ShoppingBagPage shoppingBagPage = productPage.clickViewBagButton();
 
-        // Verify bag contents
-        Assert.assertTrue(shoppingBagPage.isFirstBagItemVisible(),
+        SoftAssert softAssert = new SoftAssert();
+        softAssert.assertTrue(shoppingBagPage.isFirstBagItemVisible(),
                 "Bag item should be visible");
-        Assert.assertTrue(shoppingBagPage.isFirstBagItemPriceVisible(),
+        softAssert.assertTrue(shoppingBagPage.isFirstBagItemPriceVisible(),
                 "Price should be visible");
-        org.testng.asserts.SoftAssert softAssert = new org.testng.asserts.SoftAssert();
         softAssert.assertTrue(shoppingBagPage.isFirstBagItemQuantityVisible(),
-            "Quantity should be visible");
+                "Quantity should be visible");
         softAssert.assertTrue(shoppingBagPage.isFirstBagItemRemoveButtonVisible(),
-            "Remove button should be visible");
+                "Remove button should be visible");
         softAssert.assertAll();
 
         logger.info("Add to bag test completed successfully");

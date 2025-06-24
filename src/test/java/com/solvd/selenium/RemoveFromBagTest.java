@@ -5,7 +5,10 @@ import com.solvd.selenium.pages.HomePage;
 import com.solvd.selenium.pages.ProductPage;
 import com.solvd.selenium.pages.ShoppingBagPage;
 import org.testng.Assert;
+import org.testng.annotations.Optional;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
 
 public class RemoveFromBagTest extends BaseTest {
 
@@ -17,11 +20,13 @@ public class RemoveFromBagTest extends BaseTest {
      * and verifying that the bag is empty.
      */
     @Test(description = "Verify remove product from bag functionality")
-    public void testRemoveFromBag() {
-        logger.info("Starting remove from bag test");
+    @Parameters({ "category", "subCategory" })
 
-        String category = "Women";
-        String subCategory = "All Dresses";
+    public void testRemoveFromBag(
+            @Optional("women") String category,
+            @Optional("All Dresses") String subCategory) {
+
+        logger.info("Starting remove from bag test");
 
         navigateToHomePage();
         HomePage homePage = new HomePage(getDriver());
@@ -46,13 +51,7 @@ public class RemoveFromBagTest extends BaseTest {
         // Remove item
         shoppingBagPage.clickFirstBagItemRemoveButton();
 
-        // Verify removal
-        Assert.assertTrue(shoppingBagPage.isEmptyBagMessageVisible(),
-                "Bag should be empty after removal");
-        Assert.assertEquals(shoppingBagPage.getEmptyBagMessageText(), "Your bag is empty",
-                "Empty bag message is incorrect");
-        Assert.assertTrue(shoppingBagPage.isContinueShoppingVisible(),
-                "`Continue Shopping` button should be visible");
+        verifyEmptyBagState(shoppingBagPage);
 
         // Continue shopping
         shoppingBagPage.clickContinueShopping();
@@ -62,5 +61,16 @@ public class RemoveFromBagTest extends BaseTest {
                 "Should be back on homepage after continuing shopping");
 
         logger.info("Remove from bag test completed successfully");
+    }
+
+    private void verifyEmptyBagState(ShoppingBagPage shoppingBagPage) {
+        SoftAssert softAssert = new SoftAssert();
+        softAssert.assertTrue(shoppingBagPage.isEmptyBagMessageVisible(),
+                "Bag should be empty after removal");
+        softAssert.assertEquals(shoppingBagPage.getEmptyBagMessageText(), "Your bag is empty",
+                "Empty bag message is incorrect");
+        softAssert.assertTrue(shoppingBagPage.isContinueShoppingVisible(),
+                "`Continue Shopping` button should be visible");
+        softAssert.assertAll();
     }
 }

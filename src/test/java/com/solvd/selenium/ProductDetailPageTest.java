@@ -4,7 +4,10 @@ import com.solvd.selenium.pages.HomePage;
 import com.solvd.selenium.pages.CategoryPage;
 import com.solvd.selenium.pages.ProductPage;
 import org.testng.Assert;
+import org.testng.annotations.Optional;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
 
 public class ProductDetailPageTest extends BaseTest {
 
@@ -18,9 +21,10 @@ public class ProductDetailPageTest extends BaseTest {
      * add to bag button, favorite button, and reviews section.
      */
     @Test(description = "Verify product detail page information")
-    public void testProductDetailPage() {
-        String category = "Women";
-        String subCategory = "All Dresses";
+    @Parameters({ "category", "subCategory" })
+    public void testProductDetailPage(
+            @Optional("women") String category,
+            @Optional("All Dresses") String subCategory) {
         logger.info("Starting product detail page test");
 
         navigateToHomePage();
@@ -33,17 +37,21 @@ public class ProductDetailPageTest extends BaseTest {
         // Click on first product
         ProductPage productPage = categoryPage.clickFirstProduct();
 
-        // Verify product details
-        Assert.assertTrue(productPage.isProductNameVisible(), "Product name should be visible");
-        Assert.assertTrue(productPage.isProductPriceVisible(), "Product price should be visible");
-        Assert.assertTrue(productPage.isProductDescriptionVisible(), "Product description should be visible");
-        Assert.assertTrue(productPage.areProductImagesVisible(), "Product images should be visible");
-        Assert.assertTrue(productPage.isSizeSelectionVisible(), "Size selection should be available");
-        Assert.assertTrue(productPage.isColorSelectionVisible(), "Color selection should be available");
-        Assert.assertTrue(productPage.isAddToBagButtonVisible(), "Add to Bag button should be visible");
-        Assert.assertTrue(productPage.isFavouriteButtonVisible(), "Favourite button should be visible");
-        Assert.assertTrue(productPage.hasReviewsSection(), "Reviews section should be visible if available");
-
+        verifyProductDetails(productPage);
         logger.info("Product detail page test completed successfully");
+    }
+
+    private void verifyProductDetails(ProductPage productPage) {
+        SoftAssert softAssert = new SoftAssert();
+        softAssert.assertTrue(productPage.isProductNameVisible(), "Product name should be visible");
+        softAssert.assertTrue(productPage.isProductPriceVisible(), "Product price should be visible");
+        softAssert.assertTrue(productPage.isProductDescriptionVisible(), "Product description should be visible");
+        softAssert.assertTrue(productPage.areProductImagesVisible(), "Product images should be visible");
+        softAssert.assertTrue(productPage.isSizeSelectionVisible(), "Size selection should be available");
+        softAssert.assertTrue(productPage.isColorSelectionVisible(), "Color selection should be available");
+        softAssert.assertTrue(productPage.isAddToBagButtonVisible(), "Add to Bag button should be visible");
+        softAssert.assertTrue(productPage.isFavouriteButtonVisible(), "Favourite button should be visible");
+        softAssert.assertTrue(productPage.hasReviewsSection(), "Reviews section should be visible if available");
+        softAssert.assertAll();
     }
 }

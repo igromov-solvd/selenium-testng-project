@@ -5,6 +5,8 @@ import com.solvd.selenium.pages.HomePage;
 import com.solvd.selenium.pages.ProductPage;
 import com.solvd.selenium.pages.ShoppingBagPage;
 import org.testng.Assert;
+import org.testng.annotations.Optional;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
 public class UpdateQuantityTest extends BaseTest {
@@ -18,12 +20,12 @@ public class UpdateQuantityTest extends BaseTest {
      * and verifying that the subtotal reflects the new quantity.
      */
     @Test(description = "Verify update quantity in bag functionality")
-    public void testUpdateQuantity() {
+    @Parameters({ "category", "subCategory", "newQuantity" })
+    public void testUpdateQuantity(
+            @Optional("women") String category,
+            @Optional("All Dresses") String subCategory,
+            @Optional("2") int newQuantity) {
         logger.info("Starting update quantity test");
-
-        int newQuantity = 2;
-        String category = "Women";
-        String subCategory = "All Dresses";
 
         navigateToHomePage();
         HomePage homePage = new HomePage(getDriver());

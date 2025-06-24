@@ -3,6 +3,8 @@ package com.solvd.selenium;
 import com.solvd.selenium.pages.HomePage;
 import com.solvd.selenium.pages.CategoryPage;
 import org.testng.Assert;
+import org.testng.annotations.Optional;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
 public class NavigationMenuTest extends BaseTest {
@@ -18,9 +20,11 @@ public class NavigationMenuTest extends BaseTest {
      * sorting options.
      */
     @Test(description = "Verify navigation menu category page load")
-    public void testCategoryNavigation() {
-        String category = "Women";
-        String subCategory = "All Dresses";
+    @Parameters({ "category", "subCategory", "expectedTitle" })
+    public void testCategoryNavigation(
+            @Optional("women") String category,
+            @Optional("All Dresses") String subCategory,
+            @Optional("women's dresses") String expectedTitle) {
         logger.info("Starting category navigation test for {} > {}", category, subCategory);
 
         navigateToHomePage();
@@ -29,9 +33,8 @@ public class NavigationMenuTest extends BaseTest {
         // Hover over Women category
         CategoryPage categoryPage = homePage.hoverOverMainCategoryAndClick(category, subCategory);
         Assert.assertNotNull(categoryPage, "Category page should not be null");
-
         // Verify category page
-        Assert.assertEquals(categoryPage.getPageTitle().toLowerCase(), "women's dresses",
+        Assert.assertEquals(categoryPage.getPageTitle().toLowerCase(), expectedTitle.toLowerCase(),
                 "Category page title should match expected title");
         Assert.assertTrue(categoryPage.areProductsVisible(), "Products should be visible");
         Assert.assertTrue(categoryPage.areFiltersVisible(), "Filters should be visible");
