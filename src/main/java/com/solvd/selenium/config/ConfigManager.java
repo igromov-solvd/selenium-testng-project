@@ -22,7 +22,6 @@ public class ConfigManager {
     private ConfigManager() {
         this.properties = new Properties();
         loadConfiguration();
-        validateConfiguration();
     }
 
     /**
@@ -52,32 +51,6 @@ public class ConfigManager {
         } catch (IOException e) {
             throw new RuntimeException("Error loading configuration file: " + e.getMessage(), e);
         }
-    }
-
-    /**
-     * Validate that all required configuration properties are present
-     */
-    private void validateConfiguration() {
-        String[] requiredProperties = {
-                "default.browser",
-                "remote.execution.enabled",
-                "explicit.wait.seconds",
-                "implicit.wait.seconds",
-                "page.load.timeout.seconds",
-                "screenshot.directory",
-                "base.url",
-                "selenium.hub.url",
-                "window.width",
-                "window.height",
-                "screenshot.on.failure"
-        };
-
-        for (String property : requiredProperties) {
-            if (!properties.containsKey(property) || getProperty(property).trim().isEmpty()) {
-                throw new RuntimeException("Required configuration property '" + property + "' is missing or empty");
-            }
-        }
-        logger.info("Configuration validation completed successfully");
     }
 
     /**
